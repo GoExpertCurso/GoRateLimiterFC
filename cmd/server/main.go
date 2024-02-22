@@ -10,14 +10,16 @@ import (
 )
 
 func main() {
-	configs, err := configs.LoadConfig(".")
+	config, err := configs.LoadConfig(".")
 	if err != nil {
 		panic(err)
 	}
 
+	conf := configs.NewConf(config.TokenLimit, config.IPLimit)
+
 	client := redis.NewClient(&redis.Options{
-		Addr:     configs.DBHost + ":" + configs.DBPort,
-		Password: configs.DBPassword,
+		Addr:     config.DBHost + ":" + config.DBPort,
+		Password: config.DBPassword,
 		DB:       0,
 	})
 	defer client.Close()
@@ -30,7 +32,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", web.Home)
 
-	wrappedMux := mid.RateLimitMiddleware(mux, client)
+	wrappedMux := mid.RateLimitMiddleware(mux, client, conf)
 
 	http.ListenAndServe(":8080", wrappedMux)
 }

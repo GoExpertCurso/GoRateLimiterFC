@@ -6,12 +6,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/GoExpertCurso/GoRateLimiterFC/configs"
 	entity "github.com/GoExpertCurso/GoRateLimiterFC/internal/entity"
 	rl "github.com/GoExpertCurso/GoRateLimiterFC/pkg/rateLimiter"
 	"github.com/go-redis/redis"
 )
 
-func RateLimitMiddleware(next http.Handler, client *redis.Client) http.Handler {
+func RateLimitMiddleware(next http.Handler, client *redis.Client, limits *configs.Conf) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := getToken(r)
 		ip, err := getIp()
@@ -19,7 +20,7 @@ func RateLimitMiddleware(next http.Handler, client *redis.Client) http.Handler {
 			panic(err)
 		}
 
-		request := entity.NewRequest(*ip, token)
+		request := entity.NewRequest(*ip, token, *limits)
 		request.LimitCheck()
 
 		limiter := rl.NewRateLimiter(client, int(request.Limit), time.Second)
@@ -57,8 +58,6 @@ func getToken(request *http.Request) string {
 }
 
 func chooseType(api string, token string) string {
-	fmt.Printf("API: %s\n", api)
-	fmt.Printf("TOKEN: %s\n", token)
 	if token != "" {
 		return token
 	}

@@ -2,6 +2,7 @@ package ratelimiter
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -43,8 +44,6 @@ func (rl *RateLimiter) Allow(ipOrToken string, request entity.Request) bool {
 
 	timestamp, _ := res[2].(*redis.StringCmd).Int64()
 
-	fmt.Printf("key: %s\n", key)
-
 	if now-int64(rl.window.Seconds()) > timestamp {
 		rl.client.HSet(key, "timestamp", now)
 		rl.client.HSet(key, "count", 1)
@@ -62,6 +61,13 @@ func (rl *RateLimiter) Block(ipOrToken string, limit int64) bool {
 	key := ipOrToken
 	count := rl.getCount(key)
 
+	fmt.Println()
+	fmt.Println("Count:", count)
+	fmt.Println("Limit:", limit)
+	fmt.Println("Block:", count > limit)
+	log.Println()
+	fmt.Println()
+
 	return count > limit
 }
 
@@ -78,9 +84,6 @@ func (rl *RateLimiter) getCount(ipOrToken string) int64 {
 		fmt.Println("Campo não encontrado")
 	} else if err != nil {
 		fmt.Println("Erro:", err)
-	} else {
-		fmt.Println("Valor:", val)
-		fmt.Println()
 	}
 
 	result, _ := strconv.ParseInt(val, 10, 64)

@@ -5,9 +5,9 @@ type Token struct {
 	limit       int64
 }
 
-func NewToken(accessToken string) *Token {
+func NewToken(accessToken string, limit int64) *Token {
 	return &Token{
 		AccessToken: accessToken,
-		limit:       10,
+		limit:       limit,
 	}
 }

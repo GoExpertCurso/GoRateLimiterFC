@@ -16,6 +16,14 @@ type Conf struct {
 	IPLimit    int `mapstructure:"IP_LIMIT"`
 }
 
+func NewConf(tokenLimit, ipLimit int) *Conf {
+	return &Conf{
+		TokenLimit: tokenLimit,
+		IPLimit:    ipLimit,
+	}
+
+}
+
 func LoadConfig(path string) (*conf, error) {
 	var c *conf
 	viper.AddConfigPath(path)
