@@ -1,12 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/GoExpertCurso/GoRateLimiterFC/configs"
+	data "github.com/GoExpertCurso/GoRateLimiterFC/internal/infra/db"
 	web "github.com/GoExpertCurso/GoRateLimiterFC/internal/infra/web"
 	mid "github.com/GoExpertCurso/GoRateLimiterFC/internal/infra/web/middleware"
-	"github.com/go-redis/redis"
 )
 
 func main() {
@@ -17,22 +18,30 @@ func main() {
 
 	conf := configs.NewConf(config.TokenLimit, config.IPLimit)
 
-	client := redis.NewClient(&redis.Options{
-		Addr:     config.DBHost + ":" + config.DBPort,
-		Password: config.DBPassword,
-		DB:       0,
-	})
-	defer client.Close()
-
-	_, err = client.Ping().Result()
+	redisStrategy := &data.RedisDatabaseStrategy{}
+	dbClient := data.NewDatabaseClient(redisStrategy)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return
 	}
+
+	redisClient, err := dbClient.Connect(config)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	dbClient.SetClient(redisClient)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer dbClient.Disconnect()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", web.Home)
 
-	wrappedMux := mid.RateLimitMiddleware(mux, client, conf)
+	wrappedMux := mid.RateLimitMiddleware(mux, dbClient, conf)
 
 	http.ListenAndServe(":8080", wrappedMux)
 }

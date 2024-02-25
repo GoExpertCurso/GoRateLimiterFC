@@ -8,11 +8,11 @@ import (
 
 	"github.com/GoExpertCurso/GoRateLimiterFC/configs"
 	entity "github.com/GoExpertCurso/GoRateLimiterFC/internal/entity"
+	"github.com/GoExpertCurso/GoRateLimiterFC/internal/infra/db"
 	rl "github.com/GoExpertCurso/GoRateLimiterFC/pkg/rateLimiter"
-	"github.com/go-redis/redis"
 )
 
-func RateLimitMiddleware(next http.Handler, client *redis.Client, limits *configs.Conf) http.Handler {
+func RateLimitMiddleware(next http.Handler, client interface{}, limits *configs.Conf) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := getToken(r)
 		ip, err := getIp()
@@ -23,7 +23,7 @@ func RateLimitMiddleware(next http.Handler, client *redis.Client, limits *config
 		request := entity.NewRequest(*ip, token, *limits)
 		request.LimitCheck()
 
-		limiter := rl.NewRateLimiter(client, int(request.Limit), time.Second)
+		limiter := rl.NewRateLimiter(client.(*db.DatabaseClient), int(request.Limit), time.Second)
 		allowed := limiter.Allow(chooseType(*ip, token), *request)
 
 		if limiter.Block(*ip, int64(request.Limit)) || !allowed {
