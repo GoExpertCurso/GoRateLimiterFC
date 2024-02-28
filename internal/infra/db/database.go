@@ -9,7 +9,7 @@ import (
 type DatabaseStrategy interface {
 	Connect(*configs.Conf) (interface{}, error)
 	Disconnect() error
-	Get(hashkey, field string) any
+	Get(hashkey, field string) (any, error)
 	Set(string, string, int64)
 	PipelineTX(key string, time time.Duration) (interface{}, error)
 	Delete(key string) error
@@ -36,7 +36,7 @@ func (c *DatabaseClient) Disconnect() error {
 	return c.strategy.Disconnect()
 }
 
-func (c *DatabaseClient) Get(hashKey, field string) interface{} {
+func (c *DatabaseClient) Get(hashKey, field string) (interface{}, error) {
 	return c.strategy.Get(hashKey, field)
 }
 

@@ -20,22 +20,13 @@ func main() {
 
 	redisStrategy := &data.RedisDatabaseStrategy{}
 	dbClient := data.NewDatabaseClient(redisStrategy)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
 	redisClient, err := dbClient.Connect(config)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	dbClient.SetClient(redisClient)
 
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	dbClient.SetClient(redisClient)
 	defer dbClient.Disconnect()
 
 	mux := http.NewServeMux()

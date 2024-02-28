@@ -40,19 +40,18 @@ func (r *RedisDatabaseStrategy) Disconnect() error {
 	return nil
 }
 
-func (r *RedisDatabaseStrategy) Get(hashKey, field string) any {
-	return r.client.HGet(hashKey, field)
+func (r *RedisDatabaseStrategy) Get(hashKey, field string) (any, error) {
+	return r.client.HGet(hashKey, field).Result()
 }
 
 func (r *RedisDatabaseStrategy) Set(key string, value string, param int64) {
 	r.client.HSet(key, value, param)
-	r.client.HSet(key, value, 1)
 }
 
 func (r *RedisDatabaseStrategy) PipelineTX(key string, window time.Duration) (any, error) {
 	res, err := r.client.TxPipelined(func(p redis.Pipeliner) error {
 		p.HIncrBy(key, "count", 1)
-		p.Expire(key, window)
+		p.ExpireAt(key, time.Now().Add(time.Duration(time.Second)))
 		p.HGet(key, "timestamp")
 		return nil
 	})

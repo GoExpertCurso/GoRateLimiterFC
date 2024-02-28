@@ -75,14 +75,14 @@ func (rl *RateLimiter) getCount(ipOrToken string) int64 {
 	//ctx := context.Background()
 
 	// Obter o valor do campo no hash
-	val, err := rl.client.Get(hashKey, field).(*redis.StringCmd).Result()
+	val, err := rl.client.Get(hashKey, field)
 	if err == redis.Nil {
 		fmt.Println("Campo não encontrado")
 	} else if err != nil {
 		fmt.Println("Erro:", err)
 	}
 
-	result, _ := strconv.ParseInt(val, 10, 64)
+	result, _ := strconv.ParseInt(val.(string), 10, 64)
 
 	return result
 }
