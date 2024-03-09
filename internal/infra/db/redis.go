@@ -2,7 +2,7 @@ package db
 
 import (
 	"errors"
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/GoExpertCurso/GoRateLimiterFC/configs"
@@ -26,8 +26,7 @@ func (r *RedisDatabaseStrategy) Connect(config *configs.Conf) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println("Connected to Redis")
+	log.Printf("Connected to Redis")
 	return client, nil
 }
 
@@ -35,7 +34,7 @@ func (r *RedisDatabaseStrategy) Disconnect() error {
 	if r.isConnected {
 		r.client.Close()
 		r.isConnected = false
-		fmt.Println("Desconectado do Redis")
+		log.Println("Desconectado do Redis")
 	}
 	return nil
 }
@@ -51,7 +50,7 @@ func (r *RedisDatabaseStrategy) Set(key string, value string, param int64) {
 func (r *RedisDatabaseStrategy) PipelineTX(key string, window time.Duration) (any, error) {
 	res, err := r.client.TxPipelined(func(p redis.Pipeliner) error {
 		p.HIncrBy(key, "count", 1)
-		p.ExpireAt(key, time.Now().Add(time.Duration(time.Second)))
+		p.Expire(key, window)
 		p.HGet(key, "timestamp")
 		return nil
 	})
@@ -61,7 +60,7 @@ func (r *RedisDatabaseStrategy) PipelineTX(key string, window time.Duration) (an
 func (r *RedisDatabaseStrategy) Delete(key string) error {
 	err := r.client.Del(key).Err()
 	if err != nil {
-		fmt.Println("Error deleting key:", err)
+		log.Printf("Error deleting key: %s", err)
 		return err
 	}
 	return nil

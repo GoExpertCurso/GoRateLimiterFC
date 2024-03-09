@@ -8,7 +8,9 @@ type Conf struct {
 	DBPort     string `mapstructure:"DB_PORT"`
 	DBPassword string `mapstructure:"DB_PASSWORD"`
 	TokenLimit int    `mapstructure:"TOKEN_LIMIT"`
+	TimeToken  int    `mapstructure:"TIME_TOKEN"`
 	IPLimit    int    `mapstructure:"IP_LIMIT"`
+	TimeIP     int    `mapstructure:"TIME_IP"`
 }
 
 func NewConf(tokenLimit, ipLimit int) *Conf {
@@ -37,18 +39,18 @@ func LoadConfig(path string) (*Conf, error) {
 	return c, err
 }
 
-func GetTokenLimit() int {
+func GetTokenLimit() (int, int) {
 	c, err := LoadConfig(".")
 	if err != nil {
 		panic(err)
 	}
-	return c.TokenLimit
+	return c.TokenLimit, c.TimeToken
 }
 
-func GetIpLimit() int {
+func GetIpLimit() (int, int) {
 	c, err := LoadConfig(".")
 	if err != nil {
 		panic(err)
 	}
-	return c.IPLimit
+	return c.IPLimit, c.TimeIP
 }
