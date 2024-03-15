@@ -29,7 +29,7 @@ func RateLimitMiddleware(next http.Handler, client interface{}, limits *configs.
 		duration := time.Duration(int64(timeD) * int64(time.Second))
 
 		limiter := rl.NewRateLimiter(client.(*db.DatabaseClient), int(request.Limit), duration)
-		allowed := limiter.Allow(key, *request)
+		allowed := limiter.Allow(key)
 
 		if limiter.Block(*ip, int64(request.Limit)) || !allowed {
 			fmt.Printf("Request not allowed\n")

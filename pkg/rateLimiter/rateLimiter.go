@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"time"
 
-	entity "github.com/GoExpertCurso/GoRateLimiterFC/internal/entity"
 	"github.com/GoExpertCurso/GoRateLimiterFC/internal/infra/db"
 	"github.com/go-redis/redis"
 )
@@ -24,7 +23,7 @@ func NewRateLimiter(client *db.DatabaseClient, limit int, window time.Duration) 
 	}
 }
 
-func (rl *RateLimiter) Allow(ipOrToken string, request entity.Request) bool {
+func (rl *RateLimiter) Allow(ipOrToken string) bool {
 	key := ipOrToken
 	now := time.Now().Unix()
 	res, _ := rl.client.PipelineTX(key, rl.window)
