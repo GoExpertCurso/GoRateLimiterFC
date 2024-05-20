@@ -11,16 +11,10 @@ import (
 )
 
 func main() {
-	config, err := configs.LoadConfig(".")
-	if err != nil {
-		panic(err)
-	}
-
-	conf := configs.NewConf(config.TokenLimit, config.IPLimit)
-
+	configs.LoadEnv()
 	redisStrategy := &data.RedisDatabaseStrategy{}
 	dbClient := data.NewDatabaseClient(redisStrategy)
-	redisClient, err := dbClient.Connect(config)
+	redisClient, err := dbClient.Connect()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -32,7 +26,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", web.Home)
 
-	wrappedMux := mid.RateLimitMiddleware(mux, dbClient, conf)
+	wrappedMux := mid.RateLimitMiddleware(mux, dbClient)
 
 	http.ListenAndServe(":8080", wrappedMux)
 }

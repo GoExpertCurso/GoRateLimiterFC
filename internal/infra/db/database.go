@@ -2,12 +2,10 @@ package db
 
 import (
 	"time"
-
-	"github.com/GoExpertCurso/GoRateLimiterFC/configs"
 )
 
 type DatabaseStrategy interface {
-	Connect(*configs.Conf) (interface{}, error)
+	Connect() (interface{}, error)
 	Disconnect() error
 	Get(hashkey, field string) (any, error)
 	Set(string, string, int64)
@@ -28,8 +26,8 @@ func (c *DatabaseClient) UseDatabaseStrategy(strategy DatabaseStrategy) {
 	c.strategy = strategy
 }
 
-func (c *DatabaseClient) Connect(config *configs.Conf) (interface{}, error) {
-	return c.strategy.Connect(config)
+func (c *DatabaseClient) Connect() (interface{}, error) {
+	return c.strategy.Connect()
 }
 
 func (c *DatabaseClient) Disconnect() error {
