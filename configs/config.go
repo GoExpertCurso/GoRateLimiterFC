@@ -1,56 +1,21 @@
 package configs
 
-import "github.com/spf13/viper"
+import (
+	"log"
+	"os"
 
-type Conf struct {
-	DBDriver   string `mapstructure:"DB_DRIVER"`
-	DBHost     string `mapstructure:"DB_HOST"`
-	DBPort     string `mapstructure:"DB_PORT"`
-	DBPassword string `mapstructure:"DB_PASSWORD"`
-	TokenLimit int    `mapstructure:"TOKEN_LIMIT"`
-	TimeToken  int    `mapstructure:"TIME_TOKEN"`
-	IPLimit    int    `mapstructure:"IP_LIMIT"`
-	TimeIP     int    `mapstructure:"TIME_IP"`
-}
+	"github.com/joho/godotenv"
+)
 
-func NewConf(tokenLimit, ipLimit int) *Conf {
-	return &Conf{
-		TokenLimit: tokenLimit,
-		IPLimit:    ipLimit,
+func LoadEnv() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
 	}
 
-}
-
-func LoadConfig(path string) (*Conf, error) {
-	var c *Conf
-	viper.AddConfigPath(path)
-	viper.SetConfigName("config")
-	viper.SetConfigType("env")
-	viper.SetConfigFile(".env")
-	viper.AutomaticEnv()
-	err := viper.ReadInConfig()
-	if err != nil {
-		panic(err)
+	requiredEnv := []string{"DB_DRIVER", "DB_HOST", "DB_PORT", "DB_PASSWORD", "IP_RATE_LIMIT", "IP_BLOCK_DURATION", "TOKEN_RATE_LIMIT", "TOKEN_BLOCK_DURATION"}
+	for _, env := range requiredEnv {
+		if os.Getenv(env) == "" {
+			log.Fatalf("Environment variable %s not set", env)
+		}
 	}
-	err = viper.Unmarshal(&c)
-	if err != nil {
-		panic(err)
-	}
-	return c, err
-}
-
-func GetTokenLimit() (int, int) {
-	c, err := LoadConfig(".")
-	if err != nil {
-		panic(err)
-	}
-	return c.TokenLimit, c.TimeToken
-}
-
-func GetIpLimit() (int, int) {
-	c, err := LoadConfig(".")
-	if err != nil {
-		panic(err)
-	}
-	return c.IPLimit, c.TimeIP
 }

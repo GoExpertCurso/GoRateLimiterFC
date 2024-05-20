@@ -3,9 +3,9 @@ package db
 import (
 	"errors"
 	"log"
+	"os"
 	"time"
 
-	"github.com/GoExpertCurso/GoRateLimiterFC/configs"
 	"github.com/go-redis/redis"
 )
 
@@ -14,11 +14,11 @@ type RedisDatabaseStrategy struct {
 	isConnected bool
 }
 
-func (r *RedisDatabaseStrategy) Connect(config *configs.Conf) (any, error) {
+func (r *RedisDatabaseStrategy) Connect() (any, error) {
 	r.isConnected = true
 	client := redis.NewClient(&redis.Options{
-		Addr:     config.DBHost + ":" + config.DBPort,
-		Password: config.DBPassword,
+		Addr:     os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT"),
+		Password: os.Getenv("DB_PASSWORD"),
 		DB:       0,
 	})
 

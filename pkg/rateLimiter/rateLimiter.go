@@ -23,8 +23,7 @@ func NewRateLimiter(client *db.DatabaseClient, limit int, window time.Duration) 
 	}
 }
 
-func (rl *RateLimiter) Allow(ipOrToken string) bool {
-	key := ipOrToken
+func (rl *RateLimiter) Allow(key string) bool {
 	now := time.Now().Unix()
 	res, _ := rl.client.PipelineTX(key, rl.window)
 

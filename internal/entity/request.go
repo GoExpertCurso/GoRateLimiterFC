@@ -1,26 +1,13 @@
 package entity
 
-import "github.com/GoExpertCurso/GoRateLimiterFC/configs"
-
 type Request struct {
-	Ip    *Ip
-	Token *Token
-	Limit int64
+	Key   string
+	Limit int
 }
 
-func NewRequest(ip string, token string, limits configs.Conf) *Request {
-	ipAdress := NewIp(ip, int64(limits.IPLimit))
-	accessToken := NewToken(token, int64(limits.TokenLimit))
+func NewRequest(key string, limit int) *Request {
 	return &Request{
-		Ip:    ipAdress,
-		Token: accessToken,
-	}
-}
-
-func (r *Request) LimitCheck() {
-	if r.Token.limit == 0 {
-		r.Limit = r.Ip.limit
-	} else {
-		r.Limit = r.Token.limit
+		Key:   key,
+		Limit: limit,
 	}
 }

@@ -5,15 +5,16 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
-	"github.com/GoExpertCurso/GoRateLimiterFC/configs"
 	entity "github.com/GoExpertCurso/GoRateLimiterFC/internal/entity"
 	"github.com/GoExpertCurso/GoRateLimiterFC/internal/infra/db"
 	rl "github.com/GoExpertCurso/GoRateLimiterFC/pkg/rateLimiter"
 )
 
-func RateLimitMiddleware(next http.Handler, client interface{}, limits *configs.Conf) http.Handler {
+func RateLimitMiddleware(next http.Handler, client interface{}) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := getToken(r)
 		ip, err := getIp()
@@ -21,12 +22,16 @@ func RateLimitMiddleware(next http.Handler, client interface{}, limits *configs.
 			panic(err)
 		}
 
-		request := entity.NewRequest(*ip, token, *limits)
-		request.LimitCheck()
+		key := getKey(*ip, token)
+		limit, duration := getLimitAndDuration(token)
+		fmt.Println("Key:", key)
+		fmt.Println("Duration: ", duration)
+		fmt.Println("Limit: ", limit)
 
-		key, _, timeD := chooseType(*ip, token)
+		request := entity.NewRequest(key, limit)
+		//request.LimitCheck()
 
-		duration := time.Duration(int64(timeD) * int64(time.Second))
+		//duration = time.Duration(duration * time.Second)
 
 		limiter := rl.NewRateLimiter(client.(*db.DatabaseClient), int(request.Limit), duration)
 		allowed := limiter.Allow(key)
@@ -64,11 +69,20 @@ func getToken(request *http.Request) string {
 	return request.Header.Get("api-key")
 }
 
-func chooseType(api string, token string) (string, int, int) {
+func getKey(ip, token string) string {
 	if token != "" {
-		limit, time := configs.GetTokenLimit()
-		return token, limit, time
+		return token
 	}
-	limit, time := configs.GetIpLimit()
-	return api, limit, time
+	return ip
+}
+
+func getLimitAndDuration(token string) (int, time.Duration) {
+	if token != "" {
+		tokenLimit, _ := strconv.Atoi(os.Getenv("TOKEN_RATE_LIMIT"))
+		tokenBlockDuration, _ := strconv.Atoi(os.Getenv("TOKEN_BLOCK_DURATION"))
+		return tokenLimit, time.Duration(tokenBlockDuration) * time.Second
+	}
+	ipLimit, _ := strconv.Atoi(os.Getenv("IP_RATE_LIMIT"))
+	ipBlockDuration, _ := strconv.Atoi(os.Getenv("IP_BLOCK_DURATION"))
+	return ipLimit, time.Duration(ipBlockDuration) * time.Second
 }
