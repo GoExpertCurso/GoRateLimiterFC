@@ -1,6 +1,10 @@
 
 version: '3'
 
+networks:
+  appNetwork:
+    driver: bridge
+
 services:
   redis:
     image: redis
@@ -11,9 +15,11 @@ services:
       - appNetwork
 
   goapp:
-    build: .
+    build:
+      context: .
+      dockerfile: dockerfile
     ports:
-      - "0.0.0.0:8080:8080"
+      - "8080:8080"
     depends_on:
       - redis
     volumes:
@@ -21,5 +27,3 @@ services:
     networks:
       - appNetwork
       
-networks:
-  appNetwork:

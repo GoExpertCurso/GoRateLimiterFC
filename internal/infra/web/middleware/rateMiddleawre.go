@@ -1,7 +1,6 @@
 package web
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -24,26 +23,20 @@ func RateLimitMiddleware(next http.Handler, client interface{}) http.Handler {
 
 		key := getKey(*ip, token)
 		limit, duration := getLimitAndDuration(token)
-		fmt.Println("Key:", key)
-		fmt.Println("Duration: ", duration)
-		fmt.Println("Limit: ", limit)
 
 		request := entity.NewRequest(key, limit)
-		//request.LimitCheck()
-
-		//duration = time.Duration(duration * time.Second)
 
 		limiter := rl.NewRateLimiter(client.(*db.DatabaseClient), int(request.Limit), duration)
 		allowed := limiter.Allow(key)
 
 		if limiter.Block(*ip, int64(request.Limit)) || !allowed {
-			fmt.Printf("Request not allowed\n")
+			log.Printf("Request not allowed\n")
 			w.WriteHeader(http.StatusTooManyRequests)
 			w.Write([]byte("you have reached the maximum number of requests or actions allowed within a certain time frame"))
 			log.Printf("%s - %d - you have reached the maximum number of requests or actions allowed within a certain time frame", r.Method, http.StatusTooManyRequests)
 			return
 		} else {
-			fmt.Printf("Request allowed\n")
+			log.Printf("Request allowed\n")
 			w.WriteHeader(http.StatusOK)
 			log.Printf("%s - %d", r.Method, http.StatusOK)
 			next.ServeHTTP(w, r)
@@ -55,7 +48,7 @@ func RateLimitMiddleware(next http.Handler, client interface{}) http.Handler {
 func getIp() (*string, error) {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
-		fmt.Println("Erro ao obter o endereço IP:", err)
+		log.Printf("Erro ao obter o endereço IP: %v", err)
 		return nil, err
 	}
 	defer conn.Close()
