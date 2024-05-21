@@ -38,7 +38,7 @@ func RateLimitMiddleware(next http.Handler, client interface{}) http.Handler {
 		} else {
 			log.Printf("Request allowed\n")
 			w.WriteHeader(http.StatusOK)
-			log.Printf("%s - %d", r.Method, http.StatusOK)
+			log.Printf("%s - %d - %s", r.Method, http.StatusOK, key)
 			next.ServeHTTP(w, r)
 		}
 
