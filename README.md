@@ -1,9 +1,19 @@
 # GoRateLimiterFC
-This work is about a implementation of a Rate Limiter that should limit a number of requests according to the restrictions of number the requeser per second and the limit of time of each token or ip.
+This work is about a implementation of a Rate Limiter that should limit a number of requests according to the restrictions of number the requester per second and the limit of time of each token or ip.
 
 ## Instructions to project
 
-To run this project you need docker installed in you envroment.
+1. To run this project you need docker installed in you environment.
+2. If necessary to configure the environment variables of project, you can access in path **cmd/server/.env**
+   
+   2.1. Inside this env file has the token and ip configuration, if you want to change the execution parameters.
+
+### Instructions to execute project
+
+To run this project you need have docker/docker-compose installed, after this just execute the commands bellow:
+
+1. **docker-compose build** - Build the images of redis and app.
+2. **docker-compose up** - Run the application on localhost:8080
 
 ## Instructions to middleware
 
